@@ -1,0 +1,13 @@
+# misc
+.DS_Store
+*.pem
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.claude
+.mcp.json
+nul

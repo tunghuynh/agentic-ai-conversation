@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Agentic AI Conversation",
+  "version": "1.2",
+  "description": "Multi-AI discussion workspace in your sidebar",
+  "permissions": ["sidePanel", "storage", "tabs", "scripting"],
+  "host_permissions": [
+    "*://chatgpt.com/*",
+    "*://claude.ai/*",
+    "*://gemini.google.com/*",
+    "*://x.com/*",
+    "*://grok.com/*",
+    "*://www.perplexity.ai/*",
+    "*://chat.deepseek.com/*",
+    "*://chat.qwen.ai/*",
+    "*://www.kimi.com/*"
+  ],
+  "action": {
+    "default_title": "Open Agentic AI Conversation",
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "icons": {
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  }
+}

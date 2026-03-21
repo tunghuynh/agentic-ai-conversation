@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@source "./*.{html,js}";
+
+@theme {
+  --color-gray-950: #030712;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer utilities {
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+  }
+}
