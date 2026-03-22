@@ -267,6 +267,7 @@ const AI_TAB_URLS = [
   'https://chat.deepseek.com/',
   'https://chat.qwen.ai/',
   'https://www.kimi.com/',
+  'https://www.genspark.ai/',
 ];
 
 async function openAllAITabs() {

@@ -171,4 +171,38 @@ const PLATFORMS = [
       ],
     },
   },
+  {
+    id: 'genspark',
+    name: 'Genspark',
+    iconSrc: 'assets/genspark-icon.svg',
+    urlPatterns: ['*://www.genspark.ai/*'],
+    selectors: {
+      // Genspark uses a textarea with class search-input / j-search-input
+      input: [
+        'textarea.j-search-input',
+        'textarea.search-input',
+        'textarea[name="query"]',
+        'textarea',
+      ],
+      // Genspark has no visible send button — relies on Enter key press.
+      // Include fallback selectors in case UI changes add one.
+      sendBtn: [
+        'button[aria-label="Send"]',
+        'button[type="submit"]',
+      ],
+      // Genspark wraps AI responses in .conversation-statement.assistant with .markdown-viewer
+      response: [
+        '.conversation-statement.assistant .markdown-viewer',
+        '.conversation-statement.assistant',
+        '.conversation-content .markdown-viewer',
+        '.markdown-viewer',
+      ],
+      // Genspark dynamically renders stop/loading indicators during streaming
+      generatingSignal: [
+        'button[aria-label="Stop"]',
+        'button[aria-label="Stop generating"]',
+        '.stop-button',
+      ],
+    },
+  },
 ];

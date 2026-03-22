@@ -13,7 +13,8 @@
     "*://www.perplexity.ai/*",
     "*://chat.deepseek.com/*",
     "*://chat.qwen.ai/*",
-    "*://www.kimi.com/*"
+    "*://www.kimi.com/*",
+    "*://www.genspark.ai/*"
   ],
   "action": {
     "default_title": "Open Agentic AI Conversation",

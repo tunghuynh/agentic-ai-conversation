@@ -225,7 +225,7 @@ function renderControls() {
   const openAllBtn = document.createElement('button');
   openAllBtn.className = "flex items-center gap-1 px-2 py-1 rounded-md bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-medium transition-colors shadow-sm";
   openAllBtn.innerHTML = '<i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>';
-  openAllBtn.title = 'Open all 8 AI tabs';
+  openAllBtn.title = 'Open all 9 AI tabs';
   openAllBtn.onclick = openAllAITabs;
   controlsContainer.appendChild(openAllBtn);
 
