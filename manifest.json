@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Agentic AI Conversation",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Multi-AI discussion workspace in your sidebar",
   "permissions": ["sidePanel", "storage", "tabs", "scripting"],
   "host_permissions": [
@@ -10,7 +10,10 @@
     "*://gemini.google.com/*",
     "*://x.com/*",
     "*://grok.com/*",
-    "*://www.perplexity.ai/*"
+    "*://www.perplexity.ai/*",
+    "*://chat.deepseek.com/*",
+    "*://chat.qwen.ai/*",
+    "*://www.kimi.com/*"
   ],
   "action": {
     "default_title": "Open Agentic AI Conversation",

@@ -1,0 +1,11 @@
+{
+  "skills": [],
+  "personality_tags": [],
+  "character_bio": "",
+  "custom_prompt": "",
+  "energy": {
+    "provider": "OpenAI",
+    "model": "Select Model...",
+    "apiKey": ""
+  }
+}

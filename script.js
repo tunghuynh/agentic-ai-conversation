@@ -21,8 +21,9 @@ let state = {
     maxRounds: 7,
     maxDebateTurns: 5,
     responseTimeout: 20,
-    debateInstruction: 'Act as a critical debater. Identify flaws and counter the following argument strictly concisely. Response in Vietnamese',
+    debateInstruction: "Take on the role of a participant in a debate with critical thinking skills; engage in argumentation to arrive at a final answer that everyone can agree on. Continue to argue your point if you do not agree with the other party's opinion, or agree with them to reach a common conclusion if you find their perspective valid in a debate. After analyzing, only present your own conclusion on the issue; do not claim it is 'our conclusion' if there has been no agreement from the other parties or if you are the only one involved. After all parties have agreed on the final opinion, lock it in using the sentence format 'chúng tôi đã thống nhất rằng: xxxxx'. Only repeat that exact sentence concisely, without adding anything else. No matter what questions are asked afterward, only repeat the locked conclusion using that exact format. Response in Vietnamese",
     consensusInstruction: 'Stop debating. Synthesize the above arguments and provide the final unified solution strictly concisely. Response in Vietnamese',
+    conversationMode: 'debate', // 'debate' | 'free'
   },
   sidebarOpen: window.innerWidth > window.innerHeight,
   isLandscape: window.innerWidth > window.innerHeight
@@ -91,6 +92,7 @@ async function init() {
   responseTimeoutValue.textContent = state.config.responseTimeout;
   debateInstructionInput.value = state.config.debateInstruction;
   consensusInstructionInput.value = state.config.consensusInstruction;
+  updateModeUI();
   
   updateTheme();
   updateSidebarUI();
@@ -251,11 +253,11 @@ function renderMessages() {
     if (isSystem) {
       const sysEl = document.createElement('div');
       sysEl.className = "flex justify-center my-4";
-      sysEl.innerHTML = `
-        <div class="bg-gray-100 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 text-[11px] px-3 py-1 rounded-full font-medium border border-gray-200 dark:border-gray-700/50 text-center max-w-[80%]">
-          ${msg.text}
-        </div>
-      `;
+      // Use textContent (not innerHTML) to avoid XSS from unexpected system message content
+      const sysInner = document.createElement('div');
+      sysInner.className = "bg-gray-100 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 text-[11px] px-3 py-1 rounded-full font-medium border border-gray-200 dark:border-gray-700/50 text-center max-w-[80%]";
+      sysInner.textContent = msg.text;
+      sysEl.appendChild(sysInner);
       chatHistory.appendChild(sysEl);
       return;
     }
@@ -319,6 +321,15 @@ function renderControls() {
     controlsContainer.appendChild(playPauseBtn);
     controlsContainer.appendChild(stopBtn);
   }
+
+  // "Open all AI tabs" button — always visible next to Start/Stop controls
+  const openAllBtn = document.createElement('button');
+  openAllBtn.className = "flex items-center gap-1 px-2 py-1 rounded-md bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-medium transition-colors shadow-sm";
+  openAllBtn.innerHTML = '<i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>';
+  openAllBtn.title = 'Open all 8 AI tabs';
+  openAllBtn.onclick = openAllAITabs;
+  controlsContainer.appendChild(openAllBtn);
+
   refreshIcons();
 }
 
@@ -355,19 +366,15 @@ function updateSidebarUI() {
     sidebarOverlay.classList.add('hidden');
   }
 
-  // Update close button visibility
+  // Update close button visibility (only in portrait/mobile mode)
   if (!isLandscape) {
     closeSidebarBtn.classList.remove('hidden');
   } else {
     closeSidebarBtn.classList.add('hidden');
   }
 
-  // Update open button visibility
-  if (isLandscape) {
-    openSidebarBtn.classList.remove('hidden');
-  } else {
-    openSidebarBtn.classList.remove('hidden');
-  }
+  // Open button is always visible — it's the primary sidebar toggle in all layouts
+  openSidebarBtn.classList.remove('hidden');
 }
 
 function updateTheme() {
@@ -379,6 +386,29 @@ function updateTheme() {
     themeIcon.setAttribute('data-lucide', 'moon');
   }
   refreshIcons();
+}
+
+function updateModeUI() {
+  const isFree = state.config.conversationMode === 'free';
+  const debateBtn = document.getElementById('mode-debate-btn');
+  const freeBtn = document.getElementById('mode-free-btn');
+  const debateControls = document.getElementById('debate-controls');
+  if (!debateBtn || !freeBtn) return;
+
+  // Toggle active styles on the pills
+  if (isFree) {
+    freeBtn.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-emerald-500 text-white shadow-sm transition-all';
+    debateBtn.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all';
+  } else {
+    debateBtn.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-indigo-500 text-white shadow-sm transition-all';
+    freeBtn.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all';
+  }
+
+  // Dim debate-only controls in free mode
+  if (debateControls) {
+    debateControls.style.opacity = isFree ? '0.4' : '1';
+    debateControls.style.pointerEvents = isFree ? 'none' : '';
+  }
 }
 
 // --- Storage Logic ---
@@ -418,11 +448,14 @@ async function scanTabs() {
 }
 
 // --- AI Interaction via Content Scripts ---
-async function getAIResponse(member, userMessage) {
+async function getAIResponse(member, userMessage, previousResponse = '', timeoutSecs = null) {
   if (!member.tabId) return "[System]: Tab not found.";
 
   const platform = PLATFORMS.find(p => p.id === member.id);
   if (!platform) return `[Error]: No platform config for ${member.name}.`;
+
+  // Resolve effective timeout — caller can override (e.g. Free mode uses unlimited timeout)
+  const effectiveTimeout = timeoutSecs ?? state.config.responseTimeout ?? 20;
 
   // Activate the AI tab — background tabs have throttled JS and may block DOM interactions
   try {
@@ -434,7 +467,7 @@ async function getAIResponse(member, userMessage) {
     chrome.scripting.executeScript({
       target: { tabId: member.tabId },
       func: interactWithAI,
-      args: [member.id, userMessage, platform.selectors, state.config.responseTimeout || 20]
+      args: [member.id, userMessage, platform.selectors, effectiveTimeout, previousResponse]
     }, (results) => {
       if (chrome.runtime.lastError) {
         resolve(`[Error]: Could not communicate with ${member.name} tab.`);
@@ -447,7 +480,8 @@ async function getAIResponse(member, userMessage) {
 
 // This function runs in the context of the AI's web page (injected via executeScript)
 // selectors: { input: string[], sendBtn: string[], response: string[] } — from platforms.js config
-async function interactWithAI(platformId, message, selectors, responseTimeout) {
+// previousResponse: the last known response text from this AI — used to detect when a NEW response has arrived
+async function interactWithAI(platformId, message, selectors, responseTimeout, previousResponse) {
   return new Promise((resolve) => {
     try {
       // Find first available input element (send button is re-queried on each attempt inside attemptSend)
@@ -489,12 +523,40 @@ async function interactWithAI(platformId, message, selectors, responseTimeout) {
             inputEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
           }
 
-          // Poll for a stable response (stops when text hasn't changed for 1s)
-          // Interval: 500ms → maxAttempts = responseTimeout (seconds) × 2
+          // --- Response Polling (2-layer completion detection) ---
+          //
+          // Layer 1 – Stability: text must be unchanged for STABLE_REQUIRED consecutive
+          //           intervals (default 3 × 500ms = 1.5s). This guards against brief
+          //           mid-stream pauses that previously caused premature resolve.
+          //
+          // Layer 2 – Generating signal: if the platform exposes a stop/cancel button
+          //           (selectors.generatingSignal), that element must be GONE before we
+          //           resolve. It is only present while the AI is actively streaming.
+          //
+          // Timeout safety: if maxAttempts is exceeded we resolve anyway so the
+          //           orchestrator is never stuck waiting forever.
           const POLL_INTERVAL_MS = 500;
+          const STABLE_REQUIRED = 3; // consecutive stable ticks = 1.5s of no change
+          const MIN_WAIT_TICKS = 8;  // first 4s (8×500ms): only accept genuinely new content (guards stale DOM)
           const maxAttempts = (responseTimeout || 20) * (1000 / POLL_INTERVAL_MS);
           let attempts = 0;
           let previousText = '';
+          let stableCount = 0;
+          const knownPrevious = (previousResponse || '').trim();
+          const generatingSignals = (selectors.generatingSignal || []);
+
+          /** Returns true while any generating-signal element is visible in DOM */
+          const isStillGenerating = () => {
+            for (const sel of generatingSignals) {
+              try {
+                const el = document.querySelector(sel);
+                // offsetParent is null for hidden/display:none elements
+                if (el && el.offsetParent !== null) return true;
+              } catch { /* invalid selector — skip */ }
+            }
+            return false;
+          };
+
           const checkResponse = setInterval(() => {
             attempts++;
             let responseText = '';
@@ -502,15 +564,30 @@ async function interactWithAI(platformId, message, selectors, responseTimeout) {
               const els = document.querySelectorAll(sel);
               if (els.length > 0) { responseText = els[els.length - 1].innerText; break; }
             }
-            if (responseText && responseText === previousText && attempts > 4) {
+
+            // Track consecutive stable ticks
+            if (responseText && responseText === previousText) {
+              stableCount++;
+            } else {
+              stableCount = 0; // text changed or empty — reset counter
+            }
+            previousText = responseText;
+
+            const isTextStable = stableCount >= STABLE_REQUIRED;
+            const isNewContent = attempts <= MIN_WAIT_TICKS
+              ? (!knownPrevious || responseText.trim() !== knownPrevious) // strict in first 4s: avoid stale DOM
+              : true; // after 4s, accept any stable response (AI may legitimately give same answer)
+            const generatingDone = !isStillGenerating();
+
+            if (isTextStable && isNewContent && generatingDone) {
               clearInterval(checkResponse);
               resolve(responseText);
             } else if (attempts > maxAttempts) {
               clearInterval(checkResponse);
+              // Timeout — return best available response rather than hanging forever
               resolve(responseText || `[Error]: No response received from ${platformId}.`);
             }
-            previousText = responseText;
-          }, 500);
+          }, POLL_INTERVAL_MS);
         };
 
         attemptSend();
@@ -527,72 +604,146 @@ let currentRound = 0;
 let orchestratorActive = false;
 
 async function runOrchestrator() {
+  if (orchestratorActive) return; // prevent concurrent invocation (e.g. double-click Start)
   if (state.activeMembers.length === 0) return;
 
   orchestratorActive = true;
   currentRound = 0;
   setStatus('running');
 
-  // debateTurn counts AI-to-AI exchanges to drive debate→consensus transition
-  let debateTurn = 0;
+  // currentRound (incremented once per full while-loop iteration) drives debate→consensus
+  // transition. Using it directly instead of a separate debateTurn counter ensures the
+  // threshold matches the UI label regardless of how many AIs are active.
+  const isFreeMode = state.config.conversationMode === 'free';
 
-  while (orchestratorActive && currentRound < state.config.maxRounds) {
+  // Free mode: no round limit — runs indefinitely until user stops it
+  // Debate mode: bounded by maxRounds
+  const roundLimit = isFreeMode ? Infinity : state.config.maxRounds;
+
+  while (orchestratorActive && currentRound < roundLimit) {
     for (const memberId of state.activeMembers) {
       if (!orchestratorActive) break;
 
       const member = state.tabs.find(t => t.id === memberId);
       if (!member || !member.connected) continue;
 
-      // Collect the most recent response from EACH other active AI (with name labels)
+      // --- Build per-AI context (robust for 2–8 AIs) ---
+      //
+      // Design rationale:
+      //   • We collect the last MSGS_PER_AI messages from each OTHER active AI
+      //     (not just 1) so the receiving AI sees the PROGRESSION of each opponent's
+      //     argument, not only their most recent snapshot.
+      //   • Using per-AI slicing (not a global slice) GUARANTEES that every active AI
+      //     is represented even if one AI responded much earlier than others.
+      //   • Messages are then sorted chronologically so the context reads naturally
+      //     as a conversation thread.
+      //   • Edge cases handled:
+      //       - AI hasn't spoken yet → no messages for that AI → skipped gracefully
+      //       - Tab not found (disconnected) → skipped gracefully
+      //       - 1 message if AI has only spoken once (slice(-2) degrades to slice(-1))
+      //       - Works identically for 2 AIs (1 M×2 = 2 msgs) or 8 AIs (7×2 = 14 msgs)
+      const MSGS_PER_AI = 2; // last N messages per other AI — balances context vs. length
       const otherAiMsgs = state.activeMembers
         .filter(id => id !== member.id)
-        .map(id => {
+        .flatMap(id => {
           const tab = state.tabs.find(t => t.id === id);
-          if (!tab) return null;
-          return [...state.messages].reverse().find(m => m.senderType === 'ai' && m.sender === tab.name);
+          if (!tab) return []; // tab disconnected — skip silently
+          return state.messages
+            .filter(m => m.senderType === 'ai' && m.sender === tab.name)
+            .slice(-MSGS_PER_AI); // last MSGS_PER_AI from this specific AI
         })
-        .filter(Boolean);
+        .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0)); // chronological order
 
       let context;
-      if (otherAiMsgs.length === 0) {
-        // First round — no other AI has responded yet, use human messages as context
-        context = state.messages
-          .filter(m => m.sender !== member.name)
-          .slice(-5)
-          .map(m => `${m.sender}: ${m.text}`)
-          .join('\n');
+      let prompt;
+
+      // Always anchor subsequent rounds with the original question so AIs never lose context.
+      // We use the most recent human message as the "topic" line.
+      const latestHumanMsg = [...state.messages].reverse().find(m => m.senderType === 'human');
+      const topicLine = latestHumanMsg ? `[Topic] ${latestHumanMsg.sender}: ${latestHumanMsg.text}` : '';
+
+      if (isFreeMode) {
+        // Free mode — Debate Instruction applies, but no word limit, no consensus, no round tracking
+        if (otherAiMsgs.length === 0) {
+          // First turn: use recent messages as context; exclude system messages
+          context = state.messages
+            .filter(m => m.sender !== member.name && m.senderType !== 'system')
+            .slice(-5)
+            .map(m => `${m.sender}: ${m.text}`)
+            .join('\n');
+          prompt = `Context:\n${context}`;
+        } else {
+          // Include topic anchor + last response from each other AI
+          const othersContext = otherAiMsgs.map(m => `${m.sender}: ${m.text}`).join('\n\n---\n\n');
+          context = [topicLine, othersContext].filter(Boolean).join('\n\n---\n\n');
+          prompt = `Context:\n${context}\n\n[Instruction: ${state.config.debateInstruction}]`;
+        }
       } else {
-        // Debate/consensus turn — include last message from each other AI with their names
-        debateTurn++;
-        const instruction = debateTurn <= state.config.maxDebateTurns
-          ? state.config.debateInstruction
-          : state.config.consensusInstruction;
-        const othersContext = otherAiMsgs.map(m => `${m.sender}: ${m.text}`).join('\n\n---\n\n');
-        context = `[Instruction: ${instruction}]\n\n${othersContext}`;
+        // Debate mode — apply instructions and word limit
+        if (otherAiMsgs.length === 0) {
+          // First round — no other AI has responded yet; use recent messages as context
+          // Exclude system messages to avoid polluting the AI's context with UI notifications
+          context = state.messages
+            .filter(m => m.sender !== member.name && m.senderType !== 'system')
+            .slice(-5)
+            .map(m => `${m.sender}: ${m.text}`)
+            .join('\n');
+        } else {
+          // Debate/consensus turn — currentRound tracks which phase we're in.
+          // 1 round = all active members have responded once, so threshold is stable
+          // regardless of how many AIs are participating.
+          const instruction = currentRound < state.config.maxDebateTurns
+            ? state.config.debateInstruction
+            : state.config.consensusInstruction;
+          // Include topic anchor + last response from each other AI
+          const othersContext = otherAiMsgs.map(m => `${m.sender}: ${m.text}`).join('\n\n---\n\n');
+          const fullContext = [topicLine, othersContext].filter(Boolean).join('\n\n---\n\n');
+          context = `[Instruction: ${instruction}]\n\n${fullContext}`;
+        }
+        prompt = `Context:\n${context}\n\nRespond as ${member.name}. Keep response under ${state.config.maxLength} words.`;
+
       }
 
-      const prompt = `Context:\n${context}\n\nRespond as ${member.name}. Keep response under ${state.config.maxLength} words.`;
+      // Waiting pill injected directly into DOM — bypasses state.messages, saveState(), and render()
+      // This is both safer (no pop() needed) and more efficient (O(1) vs O(n) full re-render)
+      const waitingPillEl = document.createElement('div');
+      waitingPillEl.className = 'flex justify-center my-4';
+      const waitingInner = document.createElement('div');
+      waitingInner.className = 'bg-gray-100 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 text-[11px] px-3 py-1 rounded-full font-medium border border-gray-200 dark:border-gray-700/50 text-center max-w-[80%]';
+      waitingPillEl.appendChild(waitingInner);
+      chatHistory.appendChild(waitingPillEl);
+      chatHistory.scrollTop = chatHistory.scrollHeight;
 
-      addMessage('System', 'system', `Waiting for ${member.name}...`);
-
-      // Countdown on the waiting pill — direct DOM update to avoid full re-render each second
-      let remaining = state.config.responseTimeout;
-      const waitingPill = chatHistory.lastElementChild?.querySelector('div');
-      if (waitingPill) waitingPill.textContent = `Waiting for ${member.name}... ${remaining}s`;
-      const countdownInterval = setInterval(() => {
-        remaining--;
-        if (waitingPill) {
-          waitingPill.textContent = remaining > 0
+      // Countdown — update only the waiting pill text; no re-render needed
+      // Free mode has no meaningful timeout, so show a neutral label
+      if (isFreeMode) {
+        waitingInner.textContent = `Waiting for ${member.name}...`;
+      } else {
+        let remaining = state.config.responseTimeout;
+        waitingInner.textContent = `Waiting for ${member.name}... ${remaining}s`;
+        const countdownInterval = setInterval(() => {
+          remaining--;
+          waitingInner.textContent = remaining > 0
             ? `Waiting for ${member.name}... ${remaining}s`
             : `Waiting for ${member.name}... timing out`;
-        }
-      }, 1000);
+        }, 1000);
+        // Store ref for cleanup after getAIResponse
+        waitingPillEl._countdownInterval = countdownInterval;
+      }
 
-      const responseText = await getAIResponse(member, prompt);
-      clearInterval(countdownInterval);
+      // Capture the last known response from this AI BEFORE calling, so interactWithAI
+      // can detect when a genuinely NEW response has been generated (prevents resolving with stale DOM content)
+      const prevAiMsg = [...state.messages].reverse().find(m => m.senderType === 'ai' && m.sender === member.name);
+      const previousResponse = prevAiMsg?.text || '';
 
-      // Remove the "Waiting for..." system message
-      state.messages.pop();
+      const responseText = await getAIResponse(
+        member, prompt, previousResponse,
+        isFreeMode ? 999999 : state.config.responseTimeout // Free mode = no timeout
+      );
+      if (waitingPillEl._countdownInterval) clearInterval(waitingPillEl._countdownInterval);
+
+      // Remove the waiting pill safely via direct DOM removal — no state mutation, no pop()
+      waitingPillEl.remove();
 
       if (!orchestratorActive) {
         render();
@@ -607,7 +758,9 @@ async function runOrchestrator() {
     currentRound++;
   }
   
-  if (orchestratorActive) {
+  // Only Debate mode auto-pauses after reaching maxRounds
+  // Free mode runs until user manually stops it
+  if (orchestratorActive && !isFreeMode) {
     addMessage('System', 'system', `Reached maximum rounds (${state.config.maxRounds}). Discussion paused.`);
     setStatus('paused');
   }
@@ -651,8 +804,32 @@ function handleStop() {
   addMessage('System', 'system', 'Discussion ended.');
 }
 
+// --- Open All AI Tabs ---
+// Opens all 8 supported AI platforms in background tabs, then re-scans to detect them.
+const AI_TAB_URLS = [
+  'https://chatgpt.com/',
+  'https://claude.ai/new',
+  'https://gemini.google.com/app',
+  'https://grok.com/',
+  'https://www.perplexity.ai/',
+  'https://chat.deepseek.com/',
+  'https://chat.qwen.ai/',
+  'https://www.kimi.com/',
+];
+
+async function openAllAITabs() {
+  if (typeof chrome === 'undefined' || !chrome.tabs) return;
+  // Open all tabs in background (active: false) so focus stays on extension panel
+  for (const url of AI_TAB_URLS) {
+    await chrome.tabs.create({ url, active: false });
+  }
+  // Auto-scan after a short delay to let tabs initialize
+  setTimeout(() => scanTabs(), 1500);
+}
+
 function handleClear() {
   if (confirm('Are you sure you want to clear the conversation?')) {
+    orchestratorActive = false; // stop any in-flight orchestrator loop before clearing
     state.messages = [{
       id: Date.now().toString(),
       sender: 'System',
@@ -692,8 +869,10 @@ async function handleSendMessage(e) {
   if (state.status === 'idle' && state.activeMembers.length > 0) {
     runOrchestrator();
   }
-  
-  sendButton.disabled = false;
+
+  // Reflect cleared input state: input was just cleared so button should be disabled
+  // until user types again (oninput event will re-enable when there's content)
+  sendButton.disabled = !chatInput.value.trim();
 }
 
 // --- Event Listeners ---
@@ -778,6 +957,24 @@ function setupEventListeners() {
       await scanTabs();
       scanTabsBtn.classList.remove('scanning');
       scanTabsBtn.disabled = false;
+    };
+  }
+
+  // Mode toggle buttons
+  const debateModeBtn = document.getElementById('mode-debate-btn');
+  const freeModeBtn = document.getElementById('mode-free-btn');
+  if (debateModeBtn) {
+    debateModeBtn.onclick = () => {
+      state.config.conversationMode = 'debate';
+      updateModeUI();
+      saveState();
+    };
+  }
+  if (freeModeBtn) {
+    freeModeBtn.onclick = () => {
+      state.config.conversationMode = 'free';
+      updateModeUI();
+      saveState();
     };
   }
 
