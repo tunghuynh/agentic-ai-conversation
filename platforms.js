@@ -5,6 +5,7 @@ const PLATFORMS = [
     id: 'chatgpt',
     name: 'ChatGPT',
     iconSrc: 'assets/chatgpt-icon.svg',
+    defaultOpenUrl: 'https://chatgpt.com/',
     urlPatterns: ['*://chatgpt.com/*'],
     selectors: {
       input: ['#prompt-textarea', 'div[contenteditable="true"]'],
@@ -21,6 +22,7 @@ const PLATFORMS = [
     id: 'claude',
     name: 'Claude',
     iconSrc: 'assets/claude-ai-icon.svg',
+    defaultOpenUrl: 'https://claude.ai/new',
     urlPatterns: ['*://claude.ai/*'],
     selectors: {
       input: [
@@ -49,6 +51,7 @@ const PLATFORMS = [
     id: 'gemini',
     name: 'Gemini',
     iconSrc: 'assets/google-gemini-icon.svg',
+    defaultOpenUrl: 'https://gemini.google.com/app',
     urlPatterns: ['*://gemini.google.com/*'],
     selectors: {
       input: ['div.ql-editor', 'textarea'],
@@ -187,6 +190,7 @@ const PLATFORMS = [
       // Genspark has no visible send button — relies on Enter key press.
       // Include fallback selectors in case UI changes add one.
       sendBtn: [
+        'div.search-input-container div.enter-icon',
         'button[aria-label="Send"]',
         'button[type="submit"]',
       ],
@@ -199,6 +203,7 @@ const PLATFORMS = [
       ],
       // Genspark dynamically renders stop/loading indicators during streaming
       generatingSignal: [
+        'div.search-input-container svg.stop-icon',
         'button[aria-label="Stop"]',
         'button[aria-label="Stop generating"]',
         '.stop-button',

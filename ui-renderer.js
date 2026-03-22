@@ -74,6 +74,12 @@ function renderTabs() {
   const connectedTabs = state.tabs.filter(t => t.connected);
 
   if (connectedTabs.length === 0) {
+    // Generate platform names dynamically from all registered platforms
+    const names = PlatformConfigManager.getAll().map(p => p.name);
+    const nameList = names.length > 1
+      ? names.slice(0, -1).join(', ') + ', or ' + names[names.length - 1]
+      : names[0] || 'a supported AI';
+    noTabsMsg.innerHTML = `No supported AI tabs found.<br>Open ${nameList} in your browser.`;
     noTabsMsg.classList.remove('hidden');
   } else {
     noTabsMsg.classList.add('hidden');
@@ -225,7 +231,8 @@ function renderControls() {
   const openAllBtn = document.createElement('button');
   openAllBtn.className = "flex items-center gap-1 px-2 py-1 rounded-md bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-medium transition-colors shadow-sm";
   openAllBtn.innerHTML = '<i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>';
-  openAllBtn.title = 'Open all 9 AI tabs';
+  const platformCount = PlatformConfigManager.getAll().length;
+  openAllBtn.title = `Open all ${platformCount} AI tabs`;
   openAllBtn.onclick = openAllAITabs;
   controlsContainer.appendChild(openAllBtn);
 
@@ -302,4 +309,47 @@ function updateModeUI() {
     debateControls.style.opacity = isFree ? '0.4' : '1';
     debateControls.style.pointerEvents = isFree ? 'none' : '';
   }
+}
+
+// --- Custom Platforms UI ---
+async function renderCustomPlatforms() {
+  const listEl = document.getElementById('custom-platforms-list');
+  const noMsg = document.getElementById('no-custom-msg');
+  if (!listEl) return;
+
+  const customs = await PlatformConfigManager.getCustom();
+  listEl.innerHTML = '';
+
+  if (customs.length === 0) {
+    noMsg?.classList.remove('hidden');
+  } else {
+    noMsg?.classList.add('hidden');
+  }
+
+  customs.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'flex items-center justify-between p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900';
+    el.innerHTML = `
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="w-6 h-6 rounded flex items-center justify-center bg-gray-100 dark:bg-gray-800 overflow-hidden flex-shrink-0">
+          ${p.iconSrc ? `<img src="${p.iconSrc}" alt="${p.name}" class="w-4 h-4 object-contain">` : `<i data-lucide="bot" class="w-3.5 h-3.5 text-gray-400"></i>`}
+        </div>
+        <div class="min-w-0">
+          <div class="text-xs font-medium truncate">${p.name}</div>
+          <div class="text-[10px] text-gray-400 truncate">${p.urlPatterns[0]}</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-1 flex-shrink-0">
+        <button class="edit-platform-btn p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" data-id="${p.id}">
+          <i data-lucide="pencil" class="w-3 h-3"></i>
+        </button>
+        <button class="delete-platform-btn p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500" data-id="${p.id}">
+          <i data-lucide="trash-2" class="w-3 h-3"></i>
+        </button>
+      </div>
+    `;
+    listEl.appendChild(el);
+  });
+
+  refreshIcons();
 }

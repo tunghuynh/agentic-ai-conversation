@@ -4,18 +4,7 @@
   "version": "1.2",
   "description": "Multi-AI discussion workspace in your sidebar",
   "permissions": ["sidePanel", "storage", "tabs", "scripting"],
-  "host_permissions": [
-    "*://chatgpt.com/*",
-    "*://claude.ai/*",
-    "*://gemini.google.com/*",
-    "*://x.com/*",
-    "*://grok.com/*",
-    "*://www.perplexity.ai/*",
-    "*://chat.deepseek.com/*",
-    "*://chat.qwen.ai/*",
-    "*://www.kimi.com/*",
-    "*://www.genspark.ai/*"
-  ],
+  "host_permissions": ["*://*/*"],
   "action": {
     "default_title": "Open Agentic AI Conversation",
     "default_icon": {

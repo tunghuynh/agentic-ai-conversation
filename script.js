@@ -1,6 +1,9 @@
 // --- Constants & State ---
-// Tabs are derived from PLATFORMS config (defined in platforms.js)
-const INITIAL_TABS = PLATFORMS.map(p => ({ id: p.id, name: p.name, iconSrc: p.iconSrc, connected: false, tabId: null }));
+// Tabs are derived from all platforms (built-in + custom) via PlatformConfigManager
+function buildTabsFromPlatforms(platforms) {
+  return platforms.map(p => ({ id: p.id, name: p.name, iconSrc: p.iconSrc, connected: false, tabId: null }));
+}
+const INITIAL_TABS = buildTabsFromPlatforms(PLATFORMS);
 
 let state = {
   theme: 'dark',
@@ -74,9 +77,11 @@ function saveState() {
 async function scanTabs() {
   if (typeof chrome === 'undefined' || !chrome.tabs) return;
 
-  state.tabs.forEach(t => { t.connected = false; t.tabId = null; });
+  // Refresh tabs list from all platforms (built-in + custom)
+  const allPlatforms = PlatformConfigManager.getAll();
+  state.tabs = buildTabsFromPlatforms(allPlatforms);
 
-  for (const platform of PLATFORMS) {
+  for (const platform of allPlatforms) {
     for (const urlPattern of platform.urlPatterns) {
       const tabs = await chrome.tabs.query({ url: urlPattern });
       if (tabs && tabs.length > 0) {
@@ -99,7 +104,7 @@ async function scanTabs() {
 async function getAIResponse(member, userMessage, previousResponse = '', timeoutSecs = null) {
   if (!member.tabId) return "[System]: Tab not found.";
 
-  const platform = PLATFORMS.find(p => p.id === member.id);
+  const platform = PlatformConfigManager.getAll().find(p => p.id === member.id);
   if (!platform) return `[Error]: No platform config for ${member.name}.`;
 
   const effectiveTimeout = timeoutSecs ?? state.config.responseTimeout ?? 20;
@@ -258,21 +263,13 @@ function handleStop() {
 }
 
 // --- Open All AI Tabs ---
-const AI_TAB_URLS = [
-  'https://chatgpt.com/',
-  'https://claude.ai/new',
-  'https://gemini.google.com/app',
-  'https://grok.com/',
-  'https://www.perplexity.ai/',
-  'https://chat.deepseek.com/',
-  'https://chat.qwen.ai/',
-  'https://www.kimi.com/',
-  'https://www.genspark.ai/',
-];
-
+// Derives URLs dynamically from all platforms (built-in + custom).
+// Each platform can optionally define `defaultOpenUrl`; otherwise derived from first urlPattern.
 async function openAllAITabs() {
   if (typeof chrome === 'undefined' || !chrome.tabs) return;
-  for (const url of AI_TAB_URLS) {
+  const platforms = PlatformConfigManager.getAll();
+  for (const p of platforms) {
+    const url = p.defaultOpenUrl || PlatformConfigManager.defaultUrlFromPattern(p.urlPatterns[0]);
     await chrome.tabs.create({ url, active: false });
   }
   setTimeout(() => scanTabs(), 1500);
@@ -324,6 +321,10 @@ async function handleSendMessage(e) {
 
 // --- Initialization ---
 async function init() {
+  // Load custom platforms first so scanTabs sees all platforms
+  await PlatformConfigManager.load();
+  state.tabs = buildTabsFromPlatforms(PlatformConfigManager.getAll());
+
   if (typeof chrome !== 'undefined' && chrome.storage) {
     const data = await chrome.storage.local.get(['ai_workspace_state']);
     if (data.ai_workspace_state) {
@@ -354,6 +355,7 @@ async function init() {
   updateSidebarUI();
   await scanTabs();
   render();
+  await renderCustomPlatforms();
   setupEventListeners();
   refreshIcons();
 }

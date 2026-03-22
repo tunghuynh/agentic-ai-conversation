@@ -144,4 +144,109 @@ function setupEventListeners() {
       updateSidebarUI();
     }
   };
+
+  // --- Custom Platform Modal ---
+  setupCustomPlatformEvents();
+}
+
+// --- Custom Platform CRUD Events ---
+function setupCustomPlatformEvents() {
+  const modal = document.getElementById('platform-modal');
+  const modalTitle = document.getElementById('platform-modal-title');
+  const overlay = document.getElementById('platform-modal-overlay');
+  const closeBtn = document.getElementById('platform-modal-close');
+  const cancelBtn = document.getElementById('platform-modal-cancel');
+  const saveBtn = document.getElementById('platform-modal-save');
+  const addBtn = document.getElementById('add-platform-btn');
+  const listEl = document.getElementById('custom-platforms-list');
+
+  const openModal = (editMode = false) => {
+    modalTitle.innerHTML = editMode
+      ? '<i data-lucide="pencil" class="w-5 h-5 text-emerald-500"></i> Edit Custom Platform'
+      : '<i data-lucide="puzzle" class="w-5 h-5 text-emerald-500"></i> Add Custom Platform';
+    document.getElementById('pf-id').disabled = editMode;
+    modal.classList.remove('hidden');
+    refreshIcons();
+  };
+
+  const closeModal = () => {
+    modal.classList.add('hidden');
+    document.getElementById('platform-form').reset();
+    document.getElementById('pf-edit-id').value = '';
+    document.getElementById('pf-id').disabled = false;
+  };
+
+  const splitSelectors = (str) => str.split(',').map(s => s.trim()).filter(Boolean);
+
+  if (addBtn) addBtn.onclick = () => openModal(false);
+  if (closeBtn) closeBtn.onclick = closeModal;
+  if (cancelBtn) cancelBtn.onclick = closeModal;
+  if (overlay) overlay.onclick = closeModal;
+
+  // Edit / Delete delegated clicks
+  if (listEl) {
+    listEl.addEventListener('click', async (e) => {
+      const editBtn = e.target.closest('.edit-platform-btn');
+      const deleteBtn = e.target.closest('.delete-platform-btn');
+
+      if (editBtn) {
+        const id = editBtn.dataset.id;
+        const customs = await PlatformConfigManager.getCustom();
+        const p = customs.find(c => c.id === id);
+        if (!p) return;
+        document.getElementById('pf-edit-id').value = p.id;
+        document.getElementById('pf-id').value = p.id;
+        document.getElementById('pf-name').value = p.name;
+        document.getElementById('pf-url').value = p.urlPatterns.join(', ');
+        document.getElementById('pf-icon').value = p.iconSrc || '';
+        document.getElementById('pf-input').value = (p.selectors.input || []).join(', ');
+        document.getElementById('pf-send').value = (p.selectors.sendBtn || []).join(', ');
+        document.getElementById('pf-response').value = (p.selectors.response || []).join(', ');
+        document.getElementById('pf-signal').value = (p.selectors.generatingSignal || []).join(', ');
+        openModal(true);
+      }
+
+      if (deleteBtn) {
+        const id = deleteBtn.dataset.id;
+        if (!confirm(`Remove custom platform "${id}"?`)) return;
+        try {
+          await PlatformConfigManager.remove(id);
+          await renderCustomPlatforms();
+          await scanTabs();
+        } catch (err) { alert(err.message); }
+      }
+    });
+  }
+
+  // Save
+  if (saveBtn) {
+    saveBtn.onclick = async () => {
+      const editId = document.getElementById('pf-edit-id').value;
+      const platform = {
+        id: document.getElementById('pf-id').value.trim().toLowerCase().replace(/\s+/g, '-'),
+        name: document.getElementById('pf-name').value.trim(),
+        iconSrc: document.getElementById('pf-icon').value.trim(),
+        urlPatterns: splitSelectors(document.getElementById('pf-url').value),
+        selectors: {
+          input: splitSelectors(document.getElementById('pf-input').value),
+          sendBtn: splitSelectors(document.getElementById('pf-send').value),
+          response: splitSelectors(document.getElementById('pf-response').value),
+          generatingSignal: splitSelectors(document.getElementById('pf-signal').value),
+        },
+      };
+
+      try {
+        if (editId) {
+          await PlatformConfigManager.update(editId, platform);
+        } else {
+          await PlatformConfigManager.add(platform);
+        }
+        closeModal();
+        await renderCustomPlatforms();
+        await scanTabs();
+      } catch (err) {
+        alert(err.message);
+      }
+    };
+  }
 }
