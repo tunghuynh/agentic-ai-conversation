@@ -1,5 +1,5 @@
 <div align="center">
-<img width="200" height="100" alt="GHBanner" src="https://vibexai.net/logo/logo-lc-dark.svg" />
+<img width="200" height="100" alt="GHBanner" src="https://vibexai.net/logo/logo-lc-light.svg" />
 
 # Agentic AI Conversation
 
