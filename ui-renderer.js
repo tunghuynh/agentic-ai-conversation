@@ -229,13 +229,34 @@ function updateSidebarUI() {
 }
 
 function updateTheme() {
-  if (state.theme === 'dark') {
+  const isDark = state.theme === 'dark';
+  if (isDark) {
     document.documentElement.classList.add('dark');
     themeIcon.setAttribute('data-lucide', 'sun');
   } else {
     document.documentElement.classList.remove('dark');
     themeIcon.setAttribute('data-lucide', 'moon');
   }
+  // Toggle footer logo per theme
+  const logoLight = document.getElementById('footer-logo-light');
+  const logoDark = document.getElementById('footer-logo-dark');
+  if (logoLight) logoLight.style.display = isDark ? 'none' : '';
+  if (logoDark) logoDark.style.display = isDark ? '' : 'none';
+
+  // Theme-dependent button styles (not in pre-built CSS)
+  const resetBtn = document.getElementById('reset-platforms-btn');
+  if (resetBtn) {
+    resetBtn.style.background = isDark ? '#374151' : '#e5e7eb';
+    resetBtn.style.color = isDark ? '#d1d5db' : '#4b5563';
+  }
+  const saveBtn = document.getElementById('platform-modal-save');
+  if (saveBtn) {
+    saveBtn.style.background = isDark ? '#10b981' : '#059669';
+    saveBtn.style.color = '#fff';
+  }
+
+  // Re-apply mode toggle colors
+  updateModeUI();
   refreshIcons();
 }
 
@@ -246,16 +267,21 @@ function updateModeUI() {
   const debateControls = document.getElementById('debate-controls');
   if (!debateBtn || !freeBtn) return;
 
-  const activeDebate = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-indigo-500 dark:bg-indigo-600 text-white shadow-sm transition-all';
-  const activeFree = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-emerald-500 dark:bg-emerald-600 text-white shadow-sm transition-all';
-  const inactive = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all';
+  const isDark = document.documentElement.classList.contains('dark');
+  const base = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs transition-all';
 
   if (isFree) {
-    freeBtn.className = activeFree;
-    debateBtn.className = inactive;
+    freeBtn.className = `${base} font-semibold text-white shadow-sm`;
+    freeBtn.style.background = isDark ? '#059669' : '#10b981';
+    debateBtn.className = `${base} font-medium`;
+    debateBtn.style.background = '';
+    debateBtn.style.color = isDark ? '#d1d5db' : '#4b5563';
   } else {
-    debateBtn.className = activeDebate;
-    freeBtn.className = inactive;
+    debateBtn.className = `${base} font-semibold text-white shadow-sm`;
+    debateBtn.style.background = isDark ? '#4f46e5' : '#6366f1';
+    freeBtn.className = `${base} font-medium`;
+    freeBtn.style.background = '';
+    freeBtn.style.color = isDark ? '#d1d5db' : '#4b5563';
   }
 
   if (debateControls) {
