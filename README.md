@@ -67,19 +67,22 @@ A Chrome Extension that connects to multiple AI chat platforms simultaneously an
 ```
 ├── manifest.json              # Extension manifest (MV3)
 ├── index.html                 # Side panel UI
-├── script.js                  # State, DOM refs, core actions, init
-├── platforms.js               # Factory-default AI platform definitions
-├── platform-config-manager.js # Dynamic platform CRUD (storage)
-├── orchestrator.js            # Conversation loop & context building
-├── ui-renderer.js             # DOM rendering (tabs, messages, controls)
-├── event-handlers.js          # User interaction bindings
-├── markdown-parser.js         # Markdown → HTML with tables, code blocks
-├── sanitize-html.js           # XSS sanitization whitelist
-├── chat-history-manager.js    # Conversation save/load/export
-├── syntax-highlight.js        # Code syntax highlighting
-├── background.js              # Service worker (side panel setup)
 ├── input.css                  # Tailwind source
 ├── output.css                 # Compiled Tailwind CSS
+├── src/
+│   ├── script.js              # State, DOM refs, core actions, init
+│   ├── platforms.js           # Factory-default AI platform definitions
+│   ├── platform-config-manager.js # Dynamic platform CRUD (storage)
+│   ├── orchestrator.js        # Conversation loop & context building
+│   ├── ui-renderer.js         # DOM rendering (tabs, messages, controls)
+│   ├── event-handlers.js      # User interaction bindings
+│   ├── markdown-parser.js     # Markdown → HTML with tables, code blocks
+│   ├── sanitize-html.js       # XSS sanitization whitelist
+│   ├── chat-history-manager.js # Conversation save/load/export
+│   ├── syntax-highlight.js    # Code syntax highlighting
+│   └── background.js          # Service worker (side panel setup)
+├── vendor/
+│   └── lucide.min.js          # Lucide icon library
 └── assets/                    # Icons and images
 ```
 

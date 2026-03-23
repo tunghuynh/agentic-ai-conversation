@@ -177,7 +177,7 @@ const PLATFORMS = [
   {
     id: 'genspark',
     name: 'Genspark',
-    iconSrc: 'assets/genspark-icon.svg',
+    iconSrc: 'assets/genspark-ai.svg',
     urlPatterns: ['*://www.genspark.ai/*'],
     selectors: {
       // Genspark uses a textarea with class search-input / j-search-input

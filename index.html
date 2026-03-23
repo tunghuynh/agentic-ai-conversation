@@ -50,7 +50,7 @@
       .dark .btn-red:hover { background:rgba(239,68,68,0.25); }
     </style>
     <!-- Lucide Icons -->
-    <script src="lucide.min.js"></script>
+    <script src="vendor/lucide.min.js"></script>
   </head>
   <body class="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans overflow-hidden transition-colors duration-200">
     <div id="app-container" class="flex h-[100dvh] w-full overflow-hidden">
@@ -402,16 +402,16 @@
     </div>
 
     <!-- Platform configurations (add platforms here, no core code changes needed) -->
-    <script src="platforms.js"></script>
-    <script src="syntax-highlight.js"></script>
-    <!-- Modular scripts: sanitize → platform-config → UI → orchestrator → events → main -->
-    <script src="sanitize-html.js"></script>
-    <script src="markdown-parser.js"></script>
-    <script src="chat-history-manager.js"></script>
-    <script src="platform-config-manager.js"></script>
-    <script src="ui-renderer.js"></script>
-    <script src="orchestrator.js"></script>
-    <script src="event-handlers.js"></script>
-    <script src="script.js"></script>
+    <script src="src/platforms.js"></script>
+    <script src="src/syntax-highlight.js"></script>
+    <!-- Modular scripts: sanitize → markdown → history → platform-config → UI → orchestrator → events → main -->
+    <script src="src/sanitize-html.js"></script>
+    <script src="src/markdown-parser.js"></script>
+    <script src="src/chat-history-manager.js"></script>
+    <script src="src/platform-config-manager.js"></script>
+    <script src="src/ui-renderer.js"></script>
+    <script src="src/orchestrator.js"></script>
+    <script src="src/event-handlers.js"></script>
+    <script src="src/script.js"></script>
   </body>
 </html>
