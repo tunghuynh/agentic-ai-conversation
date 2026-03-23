@@ -271,14 +271,16 @@ function updateModeUI() {
   const base = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs transition-all';
 
   if (isFree) {
-    freeBtn.className = `${base} font-semibold text-white shadow-sm`;
+    freeBtn.className = `${base} font-semibold shadow-sm`;
     freeBtn.style.background = isDark ? '#059669' : '#10b981';
+    freeBtn.style.color = '#fff';
     debateBtn.className = `${base} font-medium`;
     debateBtn.style.background = '';
     debateBtn.style.color = isDark ? '#d1d5db' : '#4b5563';
   } else {
-    debateBtn.className = `${base} font-semibold text-white shadow-sm`;
+    debateBtn.className = `${base} font-semibold shadow-sm`;
     debateBtn.style.background = isDark ? '#4f46e5' : '#6366f1';
+    debateBtn.style.color = '#fff';
     freeBtn.className = `${base} font-medium`;
     freeBtn.style.background = '';
     freeBtn.style.color = isDark ? '#d1d5db' : '#4b5563';
