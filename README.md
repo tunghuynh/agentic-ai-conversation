@@ -67,9 +67,9 @@ A Chrome Extension that connects to multiple AI chat platforms simultaneously an
 ```
 ├── manifest.json              # Extension manifest (MV3)
 ├── index.html                 # Side panel UI
-├── output.css                 # Compiled Tailwind CSS
 ├── src/
 │   ├── input.css              # Tailwind source
+│   ├── output.css             # Compiled Tailwind CSS
 │   ├── script.js              # State, DOM refs, core actions, init
 │   ├── platforms.js           # Factory-default AI platform definitions
 │   ├── platform-config-manager.js # Dynamic platform CRUD (storage)
@@ -118,7 +118,7 @@ A Chrome Extension that connects to multiple AI chat platforms simultaneously an
 ### Rebuild CSS
 
 ```bash
-npx @tailwindcss/cli -i src/input.css -o output.css
+npx @tailwindcss/cli -i src/input.css -o src/output.css
 ```
 
 ## Powered by
