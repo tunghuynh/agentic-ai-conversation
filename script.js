@@ -24,7 +24,7 @@ let state = {
     maxRounds: 7,
     maxDebateTurns: 5,
     responseTimeout: 20,
-    debateInstruction: "Take on the role of a participant in a debate with critical thinking skills; engage in argumentation to arrive at a final answer that everyone can agree on. Continue to argue your point if you do not agree with the other party's opinion, or agree with them to reach a common conclusion if you find their perspective valid in a debate. After analyzing, only present your own conclusion on the issue; do not claim it is 'our conclusion' if there has been no agreement from the other parties or if you are the only one involved. After all parties have agreed on the final opinion, lock it in using the sentence format 'chúng tôi đã thống nhất rằng: xxxxx'. Only repeat that exact sentence concisely, without adding anything else. No matter what questions are asked afterward, only repeat the locked conclusion using that exact format. Response in Vietnamese",
+    debateInstruction: "Act as a critical debater. Identify flaws and counter the following argument strictly concisely. Response in Vietnamese",
     consensusInstruction: 'Stop debating. Synthesize the above arguments and provide the final unified solution strictly concisely. Response in Vietnamese',
     conversationMode: 'debate', // 'debate' | 'free'
   },
@@ -275,8 +275,13 @@ async function openAllAITabs() {
   setTimeout(() => scanTabs(), 1500);
 }
 
-function handleClear() {
+async function handleClear() {
   if (confirm('Are you sure you want to clear the conversation?')) {
+    // Auto-save current conversation to history before clearing
+    const hasContent = state.messages.some(m => m.senderType === 'human' || m.senderType === 'ai');
+    if (hasContent) {
+      await ChatHistoryManager.saveConversation(state.messages);
+    }
     orchestratorActive = false;
     state.messages = [{
       id: Date.now().toString(),

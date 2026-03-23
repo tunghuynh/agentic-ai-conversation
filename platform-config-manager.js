@@ -109,5 +109,11 @@ const PlatformConfigManager = (() => {
     }
   }
 
-  return { load, getAll, getCustom, add, update, remove, defaultUrlFromPattern };
+  /** Remove all custom platforms — restores to built-in defaults only */
+  async function resetToDefault() {
+    await _writeStorage([]);
+    allPlatforms = [...PLATFORMS];
+  }
+
+  return { load, getAll, getCustom, add, update, remove, resetToDefault, defaultUrlFromPattern };
 })();

@@ -7,59 +7,8 @@ function refreshIcons() {
   }
 }
 
-// --- Markdown Helpers ---
-function escHtml(str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-function parseMarkdown(text) {
-  if (!text) return '';
-  const blocks = [];
-
-  // Extract fenced code blocks first; capture language for syntax highlighting
-  let html = text.replace(/```([\w]*)\n?([\s\S]*?)```/g, (_, lang, code) => {
-    const i = blocks.length;
-    const trimmed = code.trim();
-    const highlighted = Highlighter.highlight(trimmed, lang);
-    const langLabel = escHtml(lang || 'code');
-    blocks.push(
-      `<div class="code-block my-2 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">` +
-      `<div class="flex items-center justify-between px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 select-none">` +
-      `<span class="text-[10px] font-mono text-gray-500 dark:text-gray-400">${langLabel}</span>` +
-      `<button class="copy-btn text-[10px] text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">Copy</button>` +
-      `</div>` +
-      `<pre class="bg-gray-50 dark:bg-gray-900 p-3 text-xs font-mono overflow-x-auto leading-relaxed whitespace-pre"><code>${highlighted}</code></pre>` +
-      `</div>`
-    );
-    return `\x00BLOCK${i}\x00`;
-  });
-
-  // Escape remaining HTML
-  html = escHtml(html);
-
-  // Inline code
-  html = html.replace(/`([^`\n]+)`/g, '<code class="bg-gray-100 dark:bg-gray-800 px-1 rounded text-xs font-mono">$1</code>');
-  // Bold
-  html = html.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
-  // Italic
-  html = html.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
-  // Headers → bold block
-  html = html.replace(/^#{1,3} (.+)$/gm, '<div class="font-semibold mt-1.5 mb-0.5">$1</div>');
-  // Unordered list items
-  html = html.replace(/^[*\-•] (.+)$/gm, '<div class="flex gap-1.5 ml-2"><span>•</span><span>$1</span></div>');
-  // Ordered list items
-  html = html.replace(/^(\d+)\. (.+)$/gm, '<div class="flex gap-1.5 ml-2"><span>$1.</span><span>$2</span></div>');
-  // Newlines → line breaks
-  html = html.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
-
-  // Restore code blocks
-  blocks.forEach((b, i) => { html = html.replace(`\x00BLOCK${i}\x00`, b); });
-
-  // Sanitize final HTML to strip any dangerous tags from AI responses
-  return SanitizeHTML.sanitize(html);
-}
-
 // --- Render Logic ---
+// Markdown parsing is in markdown-parser.js (escHtml, parseMarkdown, renderMathBlock, etc.)
 function render() {
   renderTabs();
   renderMessages();

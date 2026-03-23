@@ -2,16 +2,33 @@
 // Strips dangerous HTML tags/attributes from AI responses to prevent XSS.
 // Allows only safe formatting tags used by parseMarkdown().
 const SanitizeHTML = (() => {
-  // Tags that parseMarkdown() generates — everything else is stripped
+  // Tags that parseMarkdown() and KaTeX generate — everything else is stripped
   const ALLOWED_TAGS = new Set([
-    'strong', 'em', 'code', 'pre', 'br', 'div', 'span', 'button', 'img',
+    // Markdown formatting
+    'strong', 'em', 'del', 'code', 'pre', 'br', 'hr', 'div', 'span', 'button', 'img', 'a',
+    // Tables
+    'table', 'thead', 'tbody', 'tr', 'th', 'td',
+    // KaTeX math rendering
+    'math', 'semantics', 'annotation', 'mrow', 'mi', 'mn', 'mo', 'msub', 'msup',
+    'msubsup', 'mfrac', 'msqrt', 'mroot', 'mover', 'munder', 'munderover',
+    'mtable', 'mtr', 'mtd', 'mtext', 'mspace', 'menclose', 'mpadded', 'mphantom',
+    'svg', 'path', 'line', 'rect',
   ]);
 
   // Attributes allowed per tag (all others removed)
   const ALLOWED_ATTRS = {
-    '*': ['class'],
+    '*': ['class', 'style'],
     'img': ['src', 'alt', 'class'],
     'button': ['class'],
+    'a': ['href', 'target', 'class'],
+    'td': ['style', 'class'],
+    'th': ['style', 'class'],
+    'annotation': ['encoding'],
+    'math': ['xmlns'],
+    'svg': ['xmlns', 'width', 'height', 'viewBox', 'style', 'class'],
+    'path': ['d', 'fill', 'stroke', 'style'],
+    'line': ['x1', 'x2', 'y1', 'y2', 'stroke', 'style'],
+    'rect': ['x', 'y', 'width', 'height', 'fill', 'stroke', 'style'],
   };
 
   /**

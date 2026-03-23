@@ -1,21 +1,7 @@
-
-1. Bổ sung thêm logic này trong lúc điều phối để các AI luôn debate nhau trước khi đồng thuận. Sau tối đa MAX_TURNS thì phải tìm được điểm đồng thuận chung
-
-```js
-let currentTurn = 0;
-const MAX_TURNS = 4;
-
-function prepareNextMessage(previousAiMessage) {
-    currentTurn++;
-    
-    if (currentTurn <= MAX_TURNS) {
-        // Trạng thái Debate
-        return `[Instruction: Act as a critical debater. Identify flaws and counter the following argument strictly concisely.]\n\n${previousAiMessage}`;
-    } else {
-        // Trạng thái Consensus
-        return `[Instruction: Stop debating. Synthesize the above arguments and provide the final unified solution strictly concisely.]\n\n${previousAiMessage}`;
-    }
-}
-```
-
-2. đưa các tham số prompt instruction và max turn ra ngoài UI config
+1. Bổ sung conversation history chat. Button đặt ở header, góc bên phải
+2. Save chat to markdown và download
+3. Khởi tạo bộ platform load mặc định ở lần đầu tiên cài đặt
+4. Phần custom platform chuyển xuống cuối cùng
+5. Có button reset to default để khởi tạo lại platform mặc định
+6. Thêm link github ở footer của panel setting `https://github.com/tunghuynh/agentic-ai-conversation`
+7. Conversation hỗ trợ hiển thị markdown để hiển thị đc style và công thức toán học

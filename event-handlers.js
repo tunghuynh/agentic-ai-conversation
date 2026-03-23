@@ -23,6 +23,22 @@ function setupEventListeners() {
 
   clearChatBtn.onclick = handleClear;
 
+  // --- Save & Download Chat ---
+  const saveChatBtn = document.getElementById('save-chat-btn');
+  if (saveChatBtn) {
+    saveChatBtn.onclick = () => {
+      const humanMsgs = state.messages.filter(m => m.senderType === 'human');
+      if (humanMsgs.length === 0) return;
+      const title = humanMsgs[0]?.text?.slice(0, 60) || 'conversation';
+      const md = ChatHistoryManager.toMarkdown(state.messages, title);
+      const safeTitle = title.replace(/[^a-zA-Z0-9\u00C0-\u024F\u1E00-\u1EFF ]/g, '').trim().replace(/\s+/g, '-').slice(0, 40);
+      ChatHistoryManager.downloadMarkdown(md, `${safeTitle || 'conversation'}.md`);
+    };
+  }
+
+  // --- Conversation History ---
+  setupHistoryEvents();
+
   openSidebarBtn.onclick = () => {
     state.sidebarOpen = true;
     updateSidebarUI();
@@ -183,6 +199,17 @@ function setupCustomPlatformEvents() {
   if (cancelBtn) cancelBtn.onclick = closeModal;
   if (overlay) overlay.onclick = closeModal;
 
+  // Reset to default platforms
+  const resetBtn = document.getElementById('reset-platforms-btn');
+  if (resetBtn) {
+    resetBtn.onclick = async () => {
+      if (!confirm('Remove all custom platforms and reset to defaults?')) return;
+      await PlatformConfigManager.resetToDefault();
+      await renderCustomPlatforms();
+      await scanTabs();
+    };
+  }
+
   // Edit / Delete delegated clicks
   if (listEl) {
     listEl.addEventListener('click', async (e) => {
@@ -250,3 +277,87 @@ function setupCustomPlatformEvents() {
     };
   }
 }
+
+// --- Conversation History Events ---
+function setupHistoryEvents() {
+  const historyBtn = document.getElementById('history-btn');
+  const historyModal = document.getElementById('history-modal');
+  const historyClose = document.getElementById('history-close');
+  const historyOverlay = document.getElementById('history-overlay');
+  const historyList = document.getElementById('history-list');
+  const historyEmpty = document.getElementById('history-empty');
+
+  const closeHistory = () => historyModal.classList.add('hidden');
+
+  const openHistory = async () => {
+    historyModal.classList.remove('hidden');
+    const conversations = await ChatHistoryManager.listConversations();
+    historyList.innerHTML = '';
+
+    if (conversations.length === 0) {
+      historyEmpty.classList.remove('hidden');
+      historyList.classList.add('hidden');
+    } else {
+      historyEmpty.classList.add('hidden');
+      historyList.classList.remove('hidden');
+
+      for (const conv of conversations) {
+        const el = document.createElement('div');
+        el.className = 'flex items-center justify-between p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors cursor-pointer';
+        const date = new Date(conv.createdAt);
+        const dateStr = isNaN(date) ? '' : date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        el.innerHTML = `
+          <div class="min-w-0 flex-1">
+            <div class="text-xs font-medium truncate">${escHtml(conv.title)}</div>
+            <div class="text-[10px] text-gray-400 mt-0.5">${dateStr} · ${conv.messageCount} messages</div>
+          </div>
+          <div class="flex items-center gap-1 flex-shrink-0 ml-2">
+            <button class="history-load-btn p-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-indigo-500" data-id="${conv.id}" title="Load">
+              <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+            </button>
+            <button class="history-delete-btn p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500" data-id="${conv.id}" title="Delete">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        `;
+        historyList.appendChild(el);
+      }
+    }
+    refreshIcons();
+  };
+
+  if (historyBtn) historyBtn.onclick = openHistory;
+  if (historyClose) historyClose.onclick = closeHistory;
+  if (historyOverlay) historyOverlay.onclick = closeHistory;
+
+  // Delegated clicks for load / delete
+  if (historyList) {
+    historyList.addEventListener('click', async (e) => {
+      const loadBtn = e.target.closest('.history-load-btn');
+      const deleteBtn = e.target.closest('.history-delete-btn');
+
+      if (loadBtn) {
+        const conv = await ChatHistoryManager.loadConversation(loadBtn.dataset.id);
+        if (!conv) return;
+        // Save current conversation before loading
+        const hasContent = state.messages.some(m => m.senderType === 'human' || m.senderType === 'ai');
+        if (hasContent) {
+          await ChatHistoryManager.saveConversation(state.messages);
+        }
+        orchestratorActive = false;
+        state.messages = conv.messages;
+        state.status = 'idle';
+        saveState();
+        render();
+        closeHistory();
+      }
+
+      if (deleteBtn) {
+        if (!confirm('Delete this conversation?')) return;
+        await ChatHistoryManager.deleteConversation(deleteBtn.dataset.id);
+        openHistory(); // refresh list
+      }
+    });
+  }
+}
+
