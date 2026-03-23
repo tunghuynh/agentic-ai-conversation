@@ -67,9 +67,9 @@ A Chrome Extension that connects to multiple AI chat platforms simultaneously an
 ```
 ├── manifest.json              # Extension manifest (MV3)
 ├── index.html                 # Side panel UI
-├── input.css                  # Tailwind source
 ├── output.css                 # Compiled Tailwind CSS
 ├── src/
+│   ├── input.css              # Tailwind source
 │   ├── script.js              # State, DOM refs, core actions, init
 │   ├── platforms.js           # Factory-default AI platform definitions
 │   ├── platform-config-manager.js # Dynamic platform CRUD (storage)
@@ -82,7 +82,8 @@ A Chrome Extension that connects to multiple AI chat platforms simultaneously an
 │   ├── syntax-highlight.js    # Code syntax highlighting
 │   └── background.js          # Service worker (side panel setup)
 ├── vendor/
-│   └── lucide.min.js          # Lucide icon library
+│   ├── lucide.min.js          # Lucide icon library
+│   └── tailwind-config.js     # Tailwind CDN play config
 └── assets/                    # Icons and images
 ```
 
@@ -117,7 +118,7 @@ A Chrome Extension that connects to multiple AI chat platforms simultaneously an
 ### Rebuild CSS
 
 ```bash
-npx @tailwindcss/cli -i input.css -o output.css
+npx @tailwindcss/cli -i src/input.css -o output.css
 ```
 
 ## Powered by
