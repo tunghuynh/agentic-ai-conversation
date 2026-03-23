@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-@source "./*.{html,js}";
+@source "../*.html";
+@source "./*.js";
 
 @theme {
   --color-gray-950: #030712;

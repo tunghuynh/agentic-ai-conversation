@@ -5,6 +5,7 @@ const PLATFORMS = [
     id: 'chatgpt',
     name: 'ChatGPT',
     iconSrc: 'assets/chatgpt-icon.svg',
+    defaultOpenUrl: 'https://chatgpt.com/',
     urlPatterns: ['*://chatgpt.com/*'],
     selectors: {
       input: ['#prompt-textarea', 'div[contenteditable="true"]'],
@@ -21,6 +22,7 @@ const PLATFORMS = [
     id: 'claude',
     name: 'Claude',
     iconSrc: 'assets/claude-ai-icon.svg',
+    defaultOpenUrl: 'https://claude.ai/new',
     urlPatterns: ['*://claude.ai/*'],
     selectors: {
       input: [
@@ -49,6 +51,7 @@ const PLATFORMS = [
     id: 'gemini',
     name: 'Gemini',
     iconSrc: 'assets/google-gemini-icon.svg',
+    defaultOpenUrl: 'https://gemini.google.com/app',
     urlPatterns: ['*://gemini.google.com/*'],
     selectors: {
       input: ['div.ql-editor', 'textarea'],
@@ -165,6 +168,42 @@ const PLATFORMS = [
       response: ['.segment-content', '.markdown', '[class*="message-content"]', '[class*="answer"]'],
       // Kimi shows a stop/pause button while generating
       generatingSignal: [
+        'button[aria-label="Stop"]',
+        'button[aria-label="Stop generating"]',
+        '.stop-button',
+      ],
+    },
+  },
+  {
+    id: 'genspark',
+    name: 'Genspark',
+    iconSrc: 'assets/genspark-ai.svg',
+    urlPatterns: ['*://www.genspark.ai/*'],
+    selectors: {
+      // Genspark uses a textarea with class search-input / j-search-input
+      input: [
+        'textarea.j-search-input',
+        'textarea.search-input',
+        'textarea[name="query"]',
+        'textarea',
+      ],
+      // Genspark has no visible send button — relies on Enter key press.
+      // Include fallback selectors in case UI changes add one.
+      sendBtn: [
+        'div.search-input-container div.enter-icon',
+        'button[aria-label="Send"]',
+        'button[type="submit"]',
+      ],
+      // Genspark wraps AI responses in .conversation-statement.assistant with .markdown-viewer
+      response: [
+        '.conversation-statement.assistant .markdown-viewer',
+        '.conversation-statement.assistant',
+        '.conversation-content .markdown-viewer',
+        '.markdown-viewer',
+      ],
+      // Genspark dynamically renders stop/loading indicators during streaming
+      generatingSignal: [
+        'div.search-input-container svg.stop-icon',
         'button[aria-label="Stop"]',
         'button[aria-label="Stop generating"]',
         '.stop-button',
