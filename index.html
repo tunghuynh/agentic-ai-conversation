@@ -106,7 +106,7 @@
             <!-- Debate Instruction — always active in BOTH modes -->
             <div class="mb-4">
               <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Debate Instruction</label>
-              <textarea id="debate-instruction" class="w-full text-sm p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none h-24 transition-shadow"></textarea>
+              <textarea id="debate-instruction" class="w-full text-sm p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none h-24 transition-shadow"></textarea>
             </div>
 
             <!-- Technical controls — ALL dimmed in Free mode -->
@@ -143,7 +143,7 @@
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Consensus Instruction</label>
-                <textarea id="consensus-instruction" class="w-full text-sm p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none h-24 transition-shadow"></textarea>
+                <textarea id="consensus-instruction" class="w-full text-sm p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none h-24 transition-shadow"></textarea>
               </div>
             </div>
           </section>
@@ -153,7 +153,7 @@
             <h2 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 flex items-center justify-between">
               Platforms
               <div class="flex items-center gap-1">
-                <button id="reset-platforms-btn" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 py-1 px-2 rounded-md text-[10px] transition-colors flex items-center gap-1" title="Reset to default platforms">
+                <button id="reset-platforms-btn" class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 py-1 px-2 rounded-md text-[10px] transition-colors flex items-center gap-1" title="Reset to default platforms">
                   <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Reset
                 </button>
                 <button id="add-platform-btn" class="bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/50 dark:hover:bg-emerald-800/50 text-emerald-700 dark:text-emerald-300 py-1 px-2 rounded-md text-[10px] transition-colors flex items-center gap-1">
@@ -356,40 +356,40 @@
             <input type="hidden" id="pf-edit-id" value="">
             <div>
               <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Platform ID <span class="text-gray-400">(unique, lowercase)</span></label>
-              <input id="pf-id" type="text" required placeholder="e.g. my-ai" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 outline-none focus:ring-2 focus:ring-emerald-500">
+              <input id="pf-id" type="text" required placeholder="e.g. my-ai" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-emerald-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Display Name</label>
-              <input id="pf-name" type="text" required placeholder="e.g. My AI" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 outline-none focus:ring-2 focus:ring-emerald-500">
+              <input id="pf-name" type="text" required placeholder="e.g. My AI" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-emerald-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">URL Pattern <span class="text-gray-400">(chrome match pattern)</span></label>
-              <input id="pf-url" type="text" required placeholder="e.g. *://my-ai.com/*" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 outline-none focus:ring-2 focus:ring-emerald-500">
+              <input id="pf-url" type="text" required placeholder="e.g. *://my-ai.com/*" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-emerald-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Icon URL <span class="text-gray-400">(optional, image URL or data URI)</span></label>
-              <input id="pf-icon" type="text" placeholder="https://example.com/icon.svg" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 outline-none focus:ring-2 focus:ring-emerald-500">
+              <input id="pf-icon" type="text" placeholder="https://example.com/icon.svg" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-emerald-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Input Selector(s) <span class="text-gray-400">(comma-separated CSS)</span></label>
-              <input id="pf-input" type="text" required placeholder="textarea, div[contenteditable=&quot;true&quot;]" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 outline-none focus:ring-2 focus:ring-emerald-500">
+              <input id="pf-input" type="text" required placeholder="textarea, div[contenteditable=&quot;true&quot;]" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-emerald-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Send Button Selector(s) <span class="text-gray-400">(comma-separated, optional)</span></label>
-              <input id="pf-send" type="text" placeholder="button[type=&quot;submit&quot;]" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 outline-none focus:ring-2 focus:ring-emerald-500">
+              <input id="pf-send" type="text" placeholder="button[type=&quot;submit&quot;]" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-emerald-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Response Selector(s) <span class="text-gray-400">(comma-separated CSS)</span></label>
-              <input id="pf-response" type="text" required placeholder=".markdown, .response-content" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 outline-none focus:ring-2 focus:ring-emerald-500">
+              <input id="pf-response" type="text" required placeholder=".markdown, .response-content" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-emerald-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Generating Signal Selector(s) <span class="text-gray-400">(optional, stop button)</span></label>
-              <input id="pf-signal" type="text" placeholder="button[aria-label=&quot;Stop&quot;]" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 outline-none focus:ring-2 focus:ring-emerald-500">
+              <input id="pf-signal" type="text" placeholder="button[aria-label=&quot;Stop&quot;]" class="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-emerald-500">
             </div>
           </form>
           <div class="px-3 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 flex justify-end gap-2">
             <button id="platform-modal-cancel" class="px-4 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Cancel</button>
-            <button id="platform-modal-save" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-all shadow-sm">Save</button>
+            <button id="platform-modal-save" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white text-sm font-medium transition-all shadow-sm">Save</button>
           </div>
         </div>
       </div>

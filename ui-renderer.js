@@ -246,12 +246,16 @@ function updateModeUI() {
   const debateControls = document.getElementById('debate-controls');
   if (!debateBtn || !freeBtn) return;
 
+  const activeDebate = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-indigo-500 dark:bg-indigo-600 text-white shadow-sm transition-all';
+  const activeFree = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-emerald-500 dark:bg-emerald-600 text-white shadow-sm transition-all';
+  const inactive = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all';
+
   if (isFree) {
-    freeBtn.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-emerald-500 text-white shadow-sm transition-all';
-    debateBtn.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all';
+    freeBtn.className = activeFree;
+    debateBtn.className = inactive;
   } else {
-    debateBtn.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-indigo-500 text-white shadow-sm transition-all';
-    freeBtn.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all';
+    debateBtn.className = activeDebate;
+    freeBtn.className = inactive;
   }
 
   if (debateControls) {
