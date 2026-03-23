@@ -203,7 +203,7 @@ function setupCustomPlatformEvents() {
   const resetBtn = document.getElementById('reset-platforms-btn');
   if (resetBtn) {
     resetBtn.onclick = async () => {
-      if (!confirm('Remove all custom platforms and reset to defaults?')) return;
+      if (!confirm('Reset all platforms to factory defaults? Custom platforms will be removed.')) return;
       await PlatformConfigManager.resetToDefault();
       await renderCustomPlatforms();
       await scanTabs();
@@ -218,8 +218,7 @@ function setupCustomPlatformEvents() {
 
       if (editBtn) {
         const id = editBtn.dataset.id;
-        const customs = await PlatformConfigManager.getCustom();
-        const p = customs.find(c => c.id === id);
+        const p = PlatformConfigManager.getAll().find(c => c.id === id);
         if (!p) return;
         document.getElementById('pf-edit-id').value = p.id;
         document.getElementById('pf-id').value = p.id;

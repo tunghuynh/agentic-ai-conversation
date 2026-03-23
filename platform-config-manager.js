@@ -1,78 +1,84 @@
 // --- Dynamic Platform Configuration Manager ---
-// Manages user-defined custom AI platforms stored in chrome.storage.local.
-// Custom platforms are merged with built-in PLATFORMS at runtime.
-// Each custom platform has the same structure as entries in platforms.js.
+// All platforms (including defaults from platforms.js) are stored in chrome.storage.local.
+// platforms.js serves as the factory-default template, loaded on first install or reset.
+// Users can add, edit, or remove ANY platform — no distinction between built-in and custom.
 
 const PlatformConfigManager = (() => {
-  const STORAGE_KEY = 'custom_platforms';
+  const STORAGE_KEY = 'configured_platforms';
+  const INIT_FLAG_KEY = 'platforms_initialized';
 
-  // Merged list: built-in PLATFORMS + user-defined custom platforms
-  let allPlatforms = [...PLATFORMS];
+  // In-memory cache of all configured platforms
+  let allPlatforms = [];
 
-  /** Load custom platforms from storage and merge with built-in list */
+  /**
+   * Load platforms from storage.
+   * On first run (no data in storage), seeds from PLATFORMS (platforms.js).
+   */
   async function load() {
-    const customs = await _readStorage();
-    allPlatforms = [...PLATFORMS, ...customs];
+    const initialized = await _readFlag();
+    if (!initialized) {
+      // First install — seed storage with factory defaults
+      await _writeStorage(_cloneDefaults());
+      await _writeFlag(true);
+    }
+    allPlatforms = await _readStorage();
+    // Fallback: if storage is somehow empty, re-seed
+    if (allPlatforms.length === 0) {
+      allPlatforms = _cloneDefaults();
+      await _writeStorage(allPlatforms);
+    }
     return allPlatforms;
   }
 
-  /** Get all platforms (built-in + custom) */
+  /** Get all configured platforms */
   function getAll() {
     return allPlatforms;
   }
 
-  /** Get only custom (user-defined) platforms */
-  async function getCustom() {
-    return _readStorage();
-  }
-
-  /** Add a new custom platform. Returns the created platform object. */
+  /** Add a new platform */
   async function add(platform) {
     _validatePlatform(platform);
-    const customs = await _readStorage();
-    if (customs.some(p => p.id === platform.id) || PLATFORMS.some(p => p.id === platform.id)) {
+    if (allPlatforms.some(p => p.id === platform.id)) {
       throw new Error(`Platform ID "${platform.id}" already exists.`);
     }
-    platform._custom = true; // mark as user-defined
-    customs.push(platform);
-    await _writeStorage(customs);
-    allPlatforms = [...PLATFORMS, ...customs];
+    allPlatforms.push(platform);
+    await _writeStorage(allPlatforms);
     return platform;
   }
 
-  /** Update an existing custom platform by ID. Cannot update built-in platforms. */
+  /** Update a platform by ID */
   async function update(id, changes) {
-    if (PLATFORMS.some(p => p.id === id)) {
-      throw new Error(`Cannot edit built-in platform "${id}".`);
-    }
-    const customs = await _readStorage();
-    const idx = customs.findIndex(p => p.id === id);
-    if (idx === -1) throw new Error(`Custom platform "${id}" not found.`);
-    customs[idx] = { ...customs[idx], ...changes, id, _custom: true };
-    _validatePlatform(customs[idx]);
-    await _writeStorage(customs);
-    allPlatforms = [...PLATFORMS, ...customs];
-    return customs[idx];
+    const idx = allPlatforms.findIndex(p => p.id === id);
+    if (idx === -1) throw new Error(`Platform "${id}" not found.`);
+    allPlatforms[idx] = { ...allPlatforms[idx], ...changes, id };
+    _validatePlatform(allPlatforms[idx]);
+    await _writeStorage(allPlatforms);
+    return allPlatforms[idx];
   }
 
-  /** Remove a custom platform by ID. Cannot remove built-in platforms. */
+  /** Remove a platform by ID */
   async function remove(id) {
-    if (PLATFORMS.some(p => p.id === id)) {
-      throw new Error(`Cannot remove built-in platform "${id}".`);
-    }
-    let customs = await _readStorage();
-    customs = customs.filter(p => p.id !== id);
-    await _writeStorage(customs);
-    allPlatforms = [...PLATFORMS, ...customs];
+    allPlatforms = allPlatforms.filter(p => p.id !== id);
+    await _writeStorage(allPlatforms);
+  }
+
+  /** Reset to factory defaults — replaces all platforms with PLATFORMS from platforms.js */
+  async function resetToDefault() {
+    allPlatforms = _cloneDefaults();
+    await _writeStorage(allPlatforms);
   }
 
   /** Generate a default open URL from the first urlPattern */
   function defaultUrlFromPattern(pattern) {
-    // Convert "*://www.example.com/*" → "https://www.example.com/"
     return pattern.replace(/^\*:\/\//, 'https://').replace(/\/\*$/, '/');
   }
 
   // --- Internal helpers ---
+
+  /** Deep clone PLATFORMS array to avoid mutating the original */
+  function _cloneDefaults() {
+    return JSON.parse(JSON.stringify(PLATFORMS));
+  }
 
   function _validatePlatform(p) {
     if (!p.id || typeof p.id !== 'string') throw new Error('Platform must have a string id.');
@@ -83,10 +89,8 @@ const PlatformConfigManager = (() => {
     if (!p.selectors || !Array.isArray(p.selectors.input) || !Array.isArray(p.selectors.response)) {
       throw new Error('Platform must have selectors.input and selectors.response arrays.');
     }
-    // Ensure sendBtn and generatingSignal arrays exist (can be empty)
     if (!Array.isArray(p.selectors.sendBtn)) p.selectors.sendBtn = [];
     if (!Array.isArray(p.selectors.generatingSignal)) p.selectors.generatingSignal = [];
-    // Default icon if none provided
     if (!p.iconSrc) p.iconSrc = '';
   }
 
@@ -95,25 +99,33 @@ const PlatformConfigManager = (() => {
       const data = await chrome.storage.local.get([STORAGE_KEY]);
       return data[STORAGE_KEY] || [];
     }
-    // Fallback to localStorage for non-extension contexts
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    } catch { return []; }
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    catch { return []; }
   }
 
-  async function _writeStorage(customs) {
+  async function _writeStorage(platforms) {
     if (typeof chrome !== 'undefined' && chrome.storage) {
-      await chrome.storage.local.set({ [STORAGE_KEY]: customs });
+      await chrome.storage.local.set({ [STORAGE_KEY]: platforms });
     } else {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(customs));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(platforms));
     }
   }
 
-  /** Remove all custom platforms — restores to built-in defaults only */
-  async function resetToDefault() {
-    await _writeStorage([]);
-    allPlatforms = [...PLATFORMS];
+  async function _readFlag() {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      const data = await chrome.storage.local.get([INIT_FLAG_KEY]);
+      return !!data[INIT_FLAG_KEY];
+    }
+    return !!localStorage.getItem(INIT_FLAG_KEY);
   }
 
-  return { load, getAll, getCustom, add, update, remove, resetToDefault, defaultUrlFromPattern };
+  async function _writeFlag(value) {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      await chrome.storage.local.set({ [INIT_FLAG_KEY]: value });
+    } else {
+      localStorage.setItem(INIT_FLAG_KEY, value ? '1' : '');
+    }
+  }
+
+  return { load, getAll, add, update, remove, resetToDefault, defaultUrlFromPattern };
 })();

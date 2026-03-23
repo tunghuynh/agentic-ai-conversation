@@ -260,22 +260,23 @@ function updateModeUI() {
   }
 }
 
-// --- Custom Platforms UI ---
-async function renderCustomPlatforms() {
+// --- Configured Platforms UI ---
+// Shows ALL platforms (defaults + user-added) — all are editable/removable.
+function renderCustomPlatforms() {
   const listEl = document.getElementById('custom-platforms-list');
   const noMsg = document.getElementById('no-custom-msg');
   if (!listEl) return;
 
-  const customs = await PlatformConfigManager.getCustom();
+  const platforms = PlatformConfigManager.getAll();
   listEl.innerHTML = '';
 
-  if (customs.length === 0) {
+  if (platforms.length === 0) {
     noMsg?.classList.remove('hidden');
   } else {
     noMsg?.classList.add('hidden');
   }
 
-  customs.forEach(p => {
+  platforms.forEach(p => {
     const el = document.createElement('div');
     el.className = 'flex items-center justify-between p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900';
     el.innerHTML = `
