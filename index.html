@@ -171,7 +171,12 @@
 
         </div>
         <div class="flex-shrink-0 p-3 border-t border-gray-200 dark:border-gray-800 text-center flex flex-col items-center gap-1">
-          <span class="text-[10px] text-gray-400 dark:text-gray-500">Powered by <a href="https://tunghuynh.net" target="_blank" class="hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline underline-offset-2">Tùng Huynh</a></span>
+          <span class="text-[10px] text-gray-400 dark:text-gray-500 inline-flex items-center gap-1">Powered by
+            <a href="https://tunghuynh.net" target="_blank" class="hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline underline-offset-2">Tùng Huynh</a>
+            <a href="https://vibexai.net" target="_blank" class="inline-flex items-center hover:opacity-80 transition-opacity">
+              <img src="https://vibexai.net/logo/logo-no-text.svg" class="h-3.5 w-auto">
+            </a>
+          </span>
           <div class="flex items-center gap-2 mt-0.5">
             <a href="https://github.com/tunghuynh/agentic-ai-conversation" target="_blank" class="text-[10px] text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors flex items-center gap-1">
               <i data-lucide="github" class="w-3 h-3"></i> GitHub
@@ -328,7 +333,7 @@
               <i data-lucide="x" class="w-4 h-4"></i>
             </button>
           </div>
-          <div id="history-list" class="max-h-[60vh] overflow-y-auto p-3 space-y-2">
+          <div id="history-list" class="max-h-[60vh] overflow-y-auto px-3 py-2 space-y-1.5">
             <!-- Conversation items rendered dynamically -->
           </div>
           <div id="history-empty" class="hidden p-6 text-center">

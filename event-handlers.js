@@ -302,7 +302,7 @@ function setupHistoryEvents() {
 
       for (const conv of conversations) {
         const el = document.createElement('div');
-        el.className = 'flex items-center justify-between p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors cursor-pointer';
+        el.className = 'flex items-center justify-between px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors cursor-pointer';
         const date = new Date(conv.createdAt);
         const dateStr = isNaN(date) ? '' : date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         el.innerHTML = `
