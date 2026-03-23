@@ -1,5 +1,5 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+<img width="1200" height="475" alt="GHBanner" src="https://vibexai.net/logo/logo-lc-dark.svg" />
 
 # Agentic AI Conversation
 
@@ -112,8 +112,27 @@ A Chrome Extension that connects to multiple AI chat platforms simultaneously an
 
 1. Go to **Platforms** section in the sidebar
 2. Click **Add**
-3. Fill in: ID, Name, URL Pattern, and CSS selectors for input/send/response
-4. Click **Save** — the platform is immediately available
+3. Fill in the form fields:
+
+| Field | Description | Example |
+|---|---|---|
+| **Platform ID** | Unique lowercase identifier | `my-ai` |
+| **Display Name** | Name shown in the UI | `My AI` |
+| **URL Pattern** | Chrome match pattern for the AI's website | `*://my-ai.com/*` |
+| **Icon URL** | *(optional)* URL or data URI for the platform icon | `https://my-ai.com/icon.svg` |
+| **Input Selector(s)** | CSS selectors for the chat input box (comma-separated) | `textarea, div[contenteditable="true"]` |
+| **Send Button Selector(s)** | *(optional)* CSS selectors for the send button | `button[type="submit"]` |
+| **Response Selector(s)** | CSS selectors for the AI response container | `.markdown, .response-content` |
+| **Generating Signal Selector(s)** | *(optional)* CSS selector for the stop/loading button (visible only while AI is streaming) | `button[aria-label="Stop"]` |
+
+4. Click **Save** — the platform is immediately available for scanning and chatting
+
+**How to find CSS selectors:**
+1. Open the AI chat website in Chrome
+2. Right-click the input box → **Inspect**
+3. In DevTools, note the element's tag, class, or ID (e.g. `textarea.chat-input`)
+4. Repeat for the send button, response area, and stop button
+5. Use multiple selectors separated by commas as fallbacks
 
 ### Rebuild CSS
 
