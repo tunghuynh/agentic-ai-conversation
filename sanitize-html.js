@@ -8,11 +8,6 @@ const SanitizeHTML = (() => {
     'strong', 'em', 'del', 'code', 'pre', 'br', 'hr', 'div', 'span', 'button', 'img', 'a',
     // Tables
     'table', 'thead', 'tbody', 'tr', 'th', 'td',
-    // KaTeX math rendering
-    'math', 'semantics', 'annotation', 'mrow', 'mi', 'mn', 'mo', 'msub', 'msup',
-    'msubsup', 'mfrac', 'msqrt', 'mroot', 'mover', 'munder', 'munderover',
-    'mtable', 'mtr', 'mtd', 'mtext', 'mspace', 'menclose', 'mpadded', 'mphantom',
-    'svg', 'path', 'line', 'rect',
   ]);
 
   // Attributes allowed per tag (all others removed)
@@ -23,12 +18,6 @@ const SanitizeHTML = (() => {
     'a': ['href', 'target', 'class'],
     'td': ['style', 'class'],
     'th': ['style', 'class'],
-    'annotation': ['encoding'],
-    'math': ['xmlns'],
-    'svg': ['xmlns', 'width', 'height', 'viewBox', 'style', 'class'],
-    'path': ['d', 'fill', 'stroke', 'style'],
-    'line': ['x1', 'x2', 'y1', 'y2', 'stroke', 'style'],
-    'rect': ['x', 'y', 'width', 'height', 'fill', 'stroke', 'style'],
   };
 
   /**

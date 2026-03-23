@@ -31,20 +31,6 @@ function parseMarkdown(text) {
     return `\x00BLOCK${i}\x00`;
   });
 
-  // Block math: $$...$$ (must come before inline math)
-  html = html.replace(/\$\$([\s\S]*?)\$\$/g, (_, expr) => {
-    const i = blocks.length;
-    blocks.push(renderMathBlock(expr.trim(), true));
-    return `\x00BLOCK${i}\x00`;
-  });
-
-  // Inline math: $...$  (single line only, avoid matching currency like $5)
-  html = html.replace(/\$([^\s$][^$\n]*?[^\s$])\$/g, (_, expr) => {
-    const i = blocks.length;
-    blocks.push(renderMathBlock(expr.trim(), false));
-    return `\x00BLOCK${i}\x00`;
-  });
-
   // --- Phase 2: Escape HTML ---
   html = escHtml(html);
 
@@ -71,17 +57,6 @@ function parseMarkdown(text) {
 
   // Sanitize final HTML to strip any dangerous tags from AI responses
   return SanitizeHTML.sanitize(html);
-}
-
-// Render math expression using KaTeX (falls back to code block if not loaded)
-function renderMathBlock(expr, isBlock) {
-  if (typeof katex !== 'undefined') {
-    try {
-      return katex.renderToString(expr, { displayMode: isBlock, throwOnError: false });
-    } catch { /* fall through */ }
-  }
-  const tag = isBlock ? 'div' : 'span';
-  return `<${tag} class="font-mono text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded">${escHtml(expr)}</${tag}>`;
 }
 
 // Parse markdown tables within already-escaped HTML
